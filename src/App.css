@@ -1,112 +1,114 @@
 .page {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 24px;
-  color: #1f2937;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+    color: #1f2937;
 }
 
 h1 {
-  margin: 0 0 16px;
-  font-size: 32px;
+    margin: 0 0 16px;
+    font-size: 32px;
 }
 
 h2 {
-  margin: 0 0 8px;
-  font-size: 18px;
+    margin: 0 0 8px;
+    font-size: 18px;
 }
 
 .panels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
 }
 
 section {
-  min-width: 0;
+    min-width: 0;
 }
 
 .editorWrap {
-  position: relative;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  overflow: hidden;
-  min-height: 360px;
+    position: relative;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 360px;
 }
 
 .editorBackdrop,
 .editorInput,
 textarea {
-  width: 100%;
-  min-height: 360px;
-  padding: 12px;
-  box-sizing: border-box;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.45;
+    width: 100%;
+    min-height: 360px;
+    padding: 12px;
+    box-sizing: border-box;
+    font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+    font-size: 14px;
+    line-height: 1.45;
 }
 
 .editorBackdrop {
-  margin: 0;
-  white-space: pre;
-  overflow: auto;
-  background: #ffffff;
+    margin: 0;
+    white-space: pre;
+    overflow: auto;
+    background: #ffffff;
 }
 
 .editorBackdrop .lineError {
-  background: #fde68a;
-  display: inline-block;
-  width: 100%;
+    background: #fde68a;
+    display: inline-block;
+    width: 100%;
 }
 
 .editorInput {
-  position: absolute;
-  inset: 0;
-  border: 0;
-  resize: vertical;
-  background: transparent;
-  color: #111827;
+    position: absolute;
+    inset: 0;
+    border: 0;
+    resize: vertical;
+    background: transparent;
+    color: #111827;
 }
 
 textarea {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  resize: vertical;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    resize: vertical;
 }
 
-.actions {
-  margin: 16px 0;
+.action {
+    width: 100%;
 }
 
 button {
-  border: 0;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  padding: 10px 14px;
-  font-size: 14px;
-  cursor: pointer;
+    border: 0;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    padding: 10px 14px;
+    font-size: 14px;
+    cursor: pointer;
 }
 
 .result {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 12px;
-  min-height: 80px;
-  background: #f9fafb;
-  white-space: pre-wrap;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 12px;
+    min-height: 80px;
+    background: #f9fafb;
+    white-space: pre-wrap;
 }
 
 .errorTitle {
-  margin-top: 12px;
+    margin-top: 12px;
 }
 
 .errorPreview {
-  background: #fff7ed;
-  border-color: #fdba74;
+    background: #fff7ed;
+    border-color: #fdba74;
 }
 
 @media (max-width: 900px) {
-  .panels {
-    grid-template-columns: 1fr;
-  }
+    .panels {
+        grid-template-columns: 1fr;
+    }
 }
