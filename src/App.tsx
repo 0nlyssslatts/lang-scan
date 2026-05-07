@@ -72,16 +72,28 @@ function App() {
                 .replace(/>/g, "&gt;");
 
         const lines = input.split("\n");
+        const markerCol = (() => {
+            const match = result.match(/столбец\s+(\d+)/i);
+            return match ? Number(match[1]) : null;
+        })();
+
         return lines
             .map((line, idx) => {
-                const safe = line.length === 0 ? " " : esc(line);
-                if (errorLine && idx + 1 === errorLine) {
-                    return `<span class="lineError">${safe}</span>`;
+                if (!(errorLine && idx + 1 === errorLine)) {
+                    return line.length === 0 ? " " : esc(line);
                 }
-                return safe;
+
+                const start = Math.max(0, (markerCol ?? 1) - 1);
+                const end = Math.min(line.length, start + 4);
+
+                const left = esc(line.slice(0, start));
+                const middle = esc(line.slice(start, end) || " ");
+                const right = esc(line.slice(end));
+
+                return `${left}<span class="lineError">${middle}</span>${right}`;
             })
             .join("\n");
-    }, [input, errorLine]);
+    }, [input, errorLine, result]);
 
     return (
         <main className="page">

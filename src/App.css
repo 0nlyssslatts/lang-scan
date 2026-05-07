@@ -56,9 +56,7 @@ textarea {
 
 .editorBackdrop .lineError {
     background: #fee2e2;
-    display: inline-block;
-    width: 100%;
-    border-left: 3px solid #dc2626;
+    border-radius: 3px;
 }
 
 .editorInput {
