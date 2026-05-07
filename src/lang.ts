@@ -1,4 +1,4 @@
-export type TokenType = "kw" | "id" | "int" | "op" | "eof";
+export type TokenType = "kw" | "id" | "int" | "op" | "paren" | "eof";
 
 export interface Token {
     type: TokenType;
@@ -33,7 +33,6 @@ const KEYWORDS = new Set([
 ]);
 
 const SET_KEYWORDS = new Set(["Анализ", "Синтез"]);
-
 const FUNCS = new Set(["sin", "cos", "tg", "abs"]);
 
 const isLetter = (ch: string) => /[A-Za-zА-Яа-яЁё]/.test(ch);
@@ -41,7 +40,6 @@ const isDigit = (ch: string) => /[0-9]/.test(ch);
 
 export function tokenize(input: string): Token[] {
     const tokens: Token[] = [];
-
     let i = 0;
     let line = 1;
     let col = 1;
@@ -73,10 +71,16 @@ export function tokenize(input: string): Token[] {
             continue;
         }
 
+        if (ch === "(" || ch === ")") {
+            push("paren", ch);
+            i += 1;
+            col += 1;
+            continue;
+        }
+
         if (isDigit(ch)) {
             const startCol = col;
             let value = ch;
-
             i += 1;
             col += 1;
 
@@ -93,14 +97,10 @@ export function tokenize(input: string): Token[] {
         if (isLetter(ch)) {
             const startCol = col;
             let value = ch;
-
             i += 1;
             col += 1;
 
-            while (
-                i < input.length &&
-                (isLetter(input[i]) || isDigit(input[i]))
-            ) {
+            while (i < input.length && (isLetter(input[i]) || isDigit(input[i]))) {
                 value += input[i];
                 i += 1;
                 col += 1;
@@ -114,7 +114,6 @@ export function tokenize(input: string): Token[] {
     }
 
     tokens.push({ type: "eof", value: "EOF", line, col });
-
     return tokens;
 }
 
@@ -136,8 +135,8 @@ class Parser {
         return this.tokens[this.pos];
     }
 
-    private next(): Token | undefined {
-        return this.tokens[this.pos + 1];
+    private next(offset = 1): Token | undefined {
+        return this.tokens[this.pos + offset];
     }
 
     private advance(): Token {
@@ -151,18 +150,9 @@ class Parser {
 
         if (token.value !== value) {
             if (value === "End" && token.type === "eof") {
-                throw new ParseError(
-                    "Не хватает 'End' в конце программы",
-                    token.line,
-                    token.col,
-                );
+                throw new ParseError("Не хватает 'End' в конце программы", token.line, token.col);
             }
-
-            throw new ParseError(
-                `Не хватает '${value}' перед '${token.value}'`,
-                token.line,
-                token.col,
-            );
+            throw new ParseError(`Не хватает '${value}' перед '${token.value}'`, token.line, token.col);
         }
 
         this.advance();
@@ -173,11 +163,7 @@ class Parser {
         const token = this.current();
 
         if (token.type !== type) {
-            throw new ParseError(
-                `Не хватает ${label} перед '${token.value}'`,
-                token.line,
-                token.col,
-            );
+            throw new ParseError(`Не хватает ${label} перед '${token.value}'`, token.line, token.col);
         }
 
         this.advance();
@@ -194,31 +180,20 @@ class Parser {
 
     parseProgram() {
         this.expectValue("Begin");
-
         this.parseEquations();
         this.parseSets();
-
         this.expectValue("End");
 
         const token = this.current();
-
         if (token.type !== "eof") {
-            throw new ParseError(
-                `Лишний ввод после End: '${token.value}'`,
-                token.line,
-                token.col,
-            );
+            throw new ParseError(`Лишний ввод после End: '${token.value}'`, token.line, token.col);
         }
     }
 
     private parseEquations() {
         if (!this.isEquationStart()) {
             const token = this.current();
-            throw new ParseError(
-                "Не хватает уравнения вида: Метка ':' Перем '=' Прав.часть",
-                token.line,
-                token.col,
-            );
+            throw new ParseError("Не хватает уравнения вида: Метка ':' Перем '=' Прав.часть", token.line, token.col);
         }
 
         this.parseEquation();
@@ -229,25 +204,17 @@ class Parser {
             if (!this.isEquationStart()) {
                 const token = this.current();
                 const n1 = this.next();
-                const n2 = this.tokens[this.pos + 2];
+                const n2 = this.next(2);
 
-                if (
-                    token.type === "int" &&
-                    n1?.type === "id" &&
-                    n2?.value === "="
-                ) {
-                    throw new ParseError(
-                        `После метки '${token.value}' не хватает ':'`,
-                        n1.line,
-                        n1.col,
-                    );
+                if (token.type === "int" && n1?.type === "id" && n2?.value === "=") {
+                    throw new ParseError(`После метки '${token.value}' не хватает ':'`, n1.line, n1.col);
                 }
 
-                throw new ParseError(
-                    "После ';' не хватает следующего уравнения",
-                    token.line,
-                    token.col,
-                );
+                if (token.value === "Анализ" || token.value === "Синтез" || token.value === "End") {
+                    break;
+                }
+
+                throw new ParseError("После ';' не хватает следующего уравнения", token.line, token.col);
             }
 
             this.parseEquation();
@@ -255,56 +222,36 @@ class Parser {
 
         if (this.isEquationStart()) {
             const token = this.current();
-            throw new ParseError(
-                "Между уравнениями не хватает символа ';'",
-                token.line,
-                token.col,
-            );
+            throw new ParseError("Между уравнениями не хватает символа ';'", token.line, token.col);
         }
     }
 
     private parseEquation() {
         const label = this.expectType("int", "метка").value;
-
         this.expectValue(":");
-
         const name = this.expectType("id", "переменная").value;
-
         this.expectValue("=");
 
         const value = this.parseRightPart();
 
         const token = this.current();
-        const isOperatorBoundary =
-            token.value === ";" ||
-            token.value === "End" ||
-            token.value === "Анализ" ||
-            token.value === "Синтез" ||
-            token.type === "eof";
+        const boundary = token.value === ";" || token.value === "Анализ" || token.value === "Синтез" || token.value === "End" || token.type === "eof";
 
-        if (!isOperatorBoundary) {
-            throw new ParseError(
-                `Не хватает оператора перед '${token.value}'`,
-                token.line,
-                token.col,
-            );
+        if (!boundary) {
+            if ((token.type === "int" && this.next()?.value === ":") || token.value === "Анализ" || token.value === "Синтез") {
+                throw new ParseError("После правой части не хватает ';'", token.line, token.col);
+            }
+            throw new ParseError(`Не хватает оператора перед '${token.value}'`, token.line, token.col);
         }
 
         this.context.set(name, value);
-
-        this.outputs.push(
-            `${label}: ${name} = ${Number.isInteger(value) ? value : value.toFixed(6)}`,
-        );
+        this.outputs.push(`${label}: ${name} = ${Number.isInteger(value) ? value : value.toFixed(6)}`);
     }
 
     private parseSets() {
         if (!this.isSetStart()) {
             const token = this.current();
-            throw new ParseError(
-                "Не хватает хотя бы одного множества: 'Анализ' или 'Синтез'",
-                token.line,
-                token.col,
-            );
+            throw new ParseError("Не хватает хотя бы одного множества: 'Анализ' или 'Синтез'", token.line, token.col);
         }
 
         while (this.isSetStart()) {
@@ -314,16 +261,11 @@ class Parser {
 
     private parseSet() {
         const kind = this.advance().value;
-
         const variables: string[] = [];
 
         if (this.current().type !== "id") {
             const token = this.current();
-            throw new ParseError(
-                `После '${kind}' не хватает хотя бы одной переменной`,
-                token.line,
-                token.col,
-            );
+            throw new ParseError(`После '${kind}' не хватает хотя бы одной переменной`, token.line, token.col);
         }
 
         while (this.current().type === "id") {
@@ -335,18 +277,15 @@ class Parser {
 
     private parseRightPart(): number {
         let sign = 1;
-
         if (this.current().value === "-") {
             this.advance();
             sign = -1;
         }
 
         let value = sign * this.parseBlock();
-
         while (this.current().value === "+" || this.current().value === "-") {
             const op = this.advance().value;
             const rhs = this.parseBlock();
-
             value = op === "+" ? value + rhs : value - rhs;
         }
 
@@ -355,7 +294,6 @@ class Parser {
 
     private parseBlock(): number {
         let value = this.parsePart();
-
         while (this.current().value === "*" || this.current().value === "/") {
             const op = this.advance().value;
             const rhs = this.parsePart();
@@ -367,24 +305,16 @@ class Parser {
 
             value = op === "*" ? value * rhs : value / rhs;
         }
-
         return value;
     }
 
     private parsePart(): number {
         let value = this.parsePiece();
-
         while (this.current().value === "и" || this.current().value === "или") {
             const op = this.advance().value;
             const rhs = this.parsePiece();
-
-            if (op === "и") {
-                value = value !== 0 && rhs !== 0 ? 1 : 0;
-            } else {
-                value = value !== 0 || rhs !== 0 ? 1 : 0;
-            }
+            value = op === "и" ? (value !== 0 && rhs !== 0 ? 1 : 0) : (value !== 0 || rhs !== 0 ? 1 : 0);
         }
-
         return value;
     }
 
@@ -393,38 +323,31 @@ class Parser {
             this.advance();
             return this.parsePiece() === 0 ? 1 : 0;
         }
-
         return this.parseElement();
     }
 
     private parseElement(): number {
         const funcs: string[] = [];
-
-        while (FUNCS.has(this.current().value)) {
-            funcs.push(this.advance().value);
-        }
+        while (FUNCS.has(this.current().value)) funcs.push(this.advance().value);
 
         let value: number;
-
-        if (this.current().type === "int") {
+        if (this.current().value === "(") {
+            this.advance();
+            value = this.parseRightPart();
+            this.expectValue(")");
+        } else if (this.current().type === "int") {
             value = Number(this.advance().value);
         } else if (this.current().type === "id") {
             const nameToken = this.advance();
             const name = nameToken.value;
-
             if (!this.context.has(name)) {
-                throw new ParseError(
-                    `Неизвестная переменная '${name}'`,
-                    nameToken.line,
-                    nameToken.col,
-                );
+                throw new ParseError(`Неизвестная переменная '${name}'`, nameToken.line, nameToken.col);
             }
-
             value = this.context.get(name)!;
         } else {
             const token = this.current();
             throw new ParseError(
-                `Не хватает целого числа или переменной перед '${token.value}'`,
+                `Не хватает целого числа, переменной или '(...)' перед '${token.value}'`,
                 token.line,
                 token.col,
             );
@@ -432,16 +355,10 @@ class Parser {
 
         for (let i = funcs.length - 1; i >= 0; i -= 1) {
             const func = funcs[i];
-
-            if (func === "sin") {
-                value = Math.sin(value);
-            } else if (func === "cos") {
-                value = Math.cos(value);
-            } else if (func === "tg") {
-                value = Math.tan(value);
-            } else if (func === "abs") {
-                value = Math.abs(value);
-            }
+            if (func === "sin") value = Math.sin(value);
+            else if (func === "cos") value = Math.cos(value);
+            else if (func === "tg") value = Math.tan(value);
+            else if (func === "abs") value = Math.abs(value);
         }
 
         return value;
@@ -451,11 +368,9 @@ class Parser {
 export function analyzeProgram(source: string) {
     const tokens = tokenize(source);
     const parser = new Parser(tokens);
-
     parser.parseProgram();
 
     const lines = parser.getOutput();
-
     return {
         message: "Синтаксис корректный",
         details: lines.length ? lines.join("\n") : "Программа обработана.",

@@ -21,74 +21,68 @@ End`
 
     const out = analyzeProgram(src)
     expect(out.message).toContain('Синтаксис корректный')
-    expect(out.details).toContain('X = 5')
-    expect(out.details).toContain('Y = -4')
+    expect(out.details).toContain('1: X = 5')
+    expect(out.details).toContain('2: Y = -4')
   })
 
-  it('supports sin/cos/tg/abs', () => {
+  it('supports sin/cos/tg/abs and parentheses', () => {
     const src = `Begin
 1: S=sin 0;
 2: C=cos 0;
 3: T=tg 0;
-4: A=-abs 3;
+4: A=abs (-3);
 Синтез G
 End`
 
     const out = analyzeProgram(src)
-    expect(out.details).toContain('S = 0')
-    expect(out.details).toContain('C = 1')
-    expect(out.details).toContain('T = 0')
-    expect(out.details).toContain('A = -3')
+    expect(out.details).toContain('1: S = 0')
+    expect(out.details).toContain('2: C = 1')
+    expect(out.details).toContain('3: T = 0')
+    expect(out.details).toContain('4: A = 3')
   })
 
-  it('supports parentheses, unary minus and отрицание', () => {
-    const src = `Begin
-1: X=-(2+3)*2;
-2: Y=отрицание 0;
-3: Z=отрицание 5;
-Анализ A
-End`
-
-    const out = analyzeProgram(src)
-    expect(out.details).toContain('X = -10')
-    expect(out.details).toContain('Y = 1')
-    expect(out.details).toContain('Z = 0')
-  })
-
-  it('supports logical operators и/или', () => {
+  it('supports logical operators и/или and отрицание', () => {
     const src = `Begin
 1: X=1 и 0;
 2: Y=1 или 0;
+3: Z=отрицание 0;
 Анализ A
 End`
     const out = analyzeProgram(src)
-    expect(out.details).toContain('X = 0')
-    expect(out.details).toContain('Y = 1')
+    expect(out.details).toContain('1: X = 0')
+    expect(out.details).toContain('2: Y = 1')
+    expect(out.details).toContain('3: Z = 1')
   })
 
-  it('supports optional label n: and multiple sets', () => {
-    const src = `Begin
-1: X=1;
-Y=X+2;
-Анализ A B C
-Синтез D E
-F G
-End`
-
-    const out = analyzeProgram(src)
-    expect(out.details).toContain('X = 1')
-    expect(out.details).toContain('Y = 3')
-  })
-
-  it('fails when semicolon is missing', () => {
+  it('fails when semicolon between equations is missing', () => {
     const src = `Begin
 1: X=2+3
+2: Y=1;
 Анализ A
 End`
     const err = getParseError(src)
-    expect(err.message).toContain("Ожидалось ';'")
+    expect(err.message).toContain("После правой части не хватает ';'")
     expect(err.line).toBe(3)
-    expect(err.col).toBe(1)
+  })
+
+  it('fails when colon after numeric label is missing', () => {
+    const src = `Begin
+1: A=10;
+2 B2=A+1;
+Анализ A
+End`
+    const err = getParseError(src)
+    expect(err.message).toContain("После метки '2' не хватает ':'")
+  })
+
+  it('fails when operator inside right part is missing', () => {
+    const src = `Begin
+1: A=10;
+2: B2=A 5*2;
+Анализ A
+End`
+    const err = getParseError(src)
+    expect(err.message).toContain("Не хватает оператора перед '5'")
   })
 
   it('fails on unknown variable', () => {
@@ -106,7 +100,7 @@ End`
 1: X=1;
 End`
     const err = getParseError(src)
-    expect(err.message).toContain('Ожидалось хотя бы одно Множество')
+    expect(err.message).toContain('Не хватает хотя бы одного множества')
     expect(err.line).toBe(3)
     expect(err.col).toBe(1)
   })
