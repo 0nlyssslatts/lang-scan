@@ -69,7 +69,7 @@ End`
   it('supports optional label n: and multiple sets', () => {
     const src = `Begin
 1: X=1;
-2: Y=X+2;
+Y=X+2;
 Анализ A B C
 Синтез D E
 F G
