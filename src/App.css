@@ -67,7 +67,8 @@ textarea {
     border: 0;
     resize: vertical;
     background: transparent;
-    color: #111827;
+    color: transparent;
+    caret-color: #111827;
 }
 
 textarea {
