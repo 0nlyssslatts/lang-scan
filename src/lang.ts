@@ -269,7 +269,18 @@ class Parser {
         }
 
         while (this.current().type === "id") {
-            variables.push(this.advance().value);
+            const variableToken = this.advance();
+            const variableName = variableToken.value;
+
+            if (!this.context.has(variableName)) {
+                throw new ParseError(
+                    `Неизвестная переменная '${variableName}' в множестве '${kind}'`,
+                    variableToken.line,
+                    variableToken.col,
+                );
+            }
+
+            variables.push(variableName);
         }
 
         this.outputs.push(`${kind}: ${variables.join(", ")}`);

@@ -16,7 +16,7 @@ describe('lang parser grammar matrix', () => {
     const src = `Begin
 1: X=2+3;
 2: Y=-abs 4;
-Анализ A B
+Анализ X Y
 End`
 
     const out = analyzeProgram(src)
@@ -31,7 +31,7 @@ End`
 2: C=cos 0;
 3: T=tg 0;
 4: A=abs (-3);
-Синтез G
+Синтез S C T A
 End`
 
     const out = analyzeProgram(src)
@@ -46,7 +46,7 @@ End`
 1: X=1 и 0;
 2: Y=1 или 0;
 3: Z=отрицание 0;
-Анализ A
+Анализ X Y Z
 End`
     const out = analyzeProgram(src)
     expect(out.details).toContain('1: X = 0')
@@ -95,6 +95,16 @@ End`
     expect(err.line).toBe(2)
   })
 
+  it('fails on unknown variable in set', () => {
+    const src = `Begin
+1: X=1;
+Анализ X Y
+End`
+    const err = getParseError(src)
+    expect(err.message).toContain("Неизвестная переменная 'Y' в множестве 'Анализ'")
+    expect(err.line).toBe(3)
+  })
+
   it('fails on missing set block', () => {
     const src = `Begin
 1: X=1;
@@ -119,7 +129,7 @@ End`
   it('fails when extra input exists after End', () => {
     const src = `Begin
 1: X=1;
-Анализ A
+Анализ X
 End
 X`
     const err = getParseError(src)
