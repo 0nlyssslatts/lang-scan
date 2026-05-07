@@ -56,7 +56,6 @@ textarea {
 
 .editorBackdrop .lineError {
     background: #fee2e2;
-    color: #991b1b;
     display: inline-block;
     width: 100%;
     border-left: 3px solid #dc2626;
