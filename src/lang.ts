@@ -143,10 +143,16 @@ class Parser {
     if (t.type !== 'eof') throw new ParseError(`Лишний ввод после End: '${t.value}'`, t.line, t.col)
   }
 
+  private isEquationStart() {
+    const t = this.current()
+    const next = this.tokens[this.pos + 1]
+    return (t.type === 'int' && next?.value === ':') || (t.type === 'id' && next?.value === '=')
+  }
+
   private parseEquations() {
     this.parseEquation()
     this.expectValue(';')
-    while (!this.isSetStart(this.current()) && this.current().value !== 'End') {
+    while (this.isEquationStart()) {
       this.parseEquation()
       this.expectValue(';')
     }
