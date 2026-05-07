@@ -150,9 +150,9 @@ class Parser {
 
         if (token.value !== value) {
             if (value === "End" && token.type === "eof") {
-                throw new ParseError("Не хватает 'End' в конце программы", token.line, token.col);
+                throw new ParseError("Программа не должна заканчиваться без 'End'", token.line, token.col);
             }
-            throw new ParseError(`Не хватает '${value}' перед '${token.value}'`, token.line, token.col);
+            throw new ParseError(`Здесь не должно быть '${token.value}' (ожидается '${value}')`, token.line, token.col);
         }
 
         this.advance();
@@ -163,7 +163,7 @@ class Parser {
         const token = this.current();
 
         if (token.type !== type) {
-            throw new ParseError(`Не хватает ${label} перед '${token.value}'`, token.line, token.col);
+            throw new ParseError(`Здесь не должно быть '${token.value}' (ожидается ${label})`, token.line, token.col);
         }
 
         this.advance();
@@ -193,7 +193,7 @@ class Parser {
     private parseEquations() {
         if (!this.isEquationStart()) {
             const token = this.current();
-            throw new ParseError("Не хватает уравнения вида: Метка ':' Перем '=' Прав.часть", token.line, token.col);
+            throw new ParseError("Здесь не должно быть этого фрагмента: нужно уравнение вида Метка ':' Перем '=' Прав.часть", token.line, token.col);
         }
 
         this.parseEquation();
@@ -207,14 +207,14 @@ class Parser {
                 const n2 = this.next(2);
 
                 if (token.type === "int" && n1?.type === "id" && n2?.value === "=") {
-                    throw new ParseError(`После метки '${token.value}' не хватает ':'`, n1.line, n1.col);
+                    throw new ParseError(`После метки '${token.value}' не должно идти имя без ':'`, n1.line, n1.col);
                 }
 
                 if (token.value === "Анализ" || token.value === "Синтез" || token.value === "End") {
                     break;
                 }
 
-                throw new ParseError("После ';' не хватает следующего уравнения", token.line, token.col);
+                throw new ParseError("После ';' не должно быть этого фрагмента: здесь должно идти следующее уравнение", token.line, token.col);
             }
 
             this.parseEquation();
@@ -222,7 +222,7 @@ class Parser {
 
         if (this.isEquationStart()) {
             const token = this.current();
-            throw new ParseError("Между уравнениями не хватает символа ';'", token.line, token.col);
+            throw new ParseError("Уравнения не должны идти подряд без ';'", token.line, token.col);
         }
     }
 
@@ -239,9 +239,9 @@ class Parser {
 
         if (!boundary) {
             if ((token.type === "int" && this.next()?.value === ":") || token.value === "Анализ" || token.value === "Синтез") {
-                throw new ParseError("После правой части не хватает ';'", token.line, token.col);
+                throw new ParseError("Уравнение не должно заканчиваться без ';'", token.line, token.col);
             }
-            throw new ParseError(`Не хватает оператора перед '${token.value}'`, token.line, token.col);
+            throw new ParseError(`Между частями выражения не должно быть пропуска оператора перед '${token.value}'`, token.line, token.col);
         }
 
         this.context.set(name, value);
@@ -251,7 +251,7 @@ class Parser {
     private parseSets() {
         if (!this.isSetStart()) {
             const token = this.current();
-            throw new ParseError("Не хватает хотя бы одного множества: 'Анализ' или 'Синтез'", token.line, token.col);
+            throw new ParseError("После уравнений не должно быть пусто: нужно хотя бы одно множество 'Анализ' или 'Синтез'", token.line, token.col);
         }
 
         while (this.isSetStart()) {
@@ -265,7 +265,7 @@ class Parser {
 
         if (this.current().type !== "id") {
             const token = this.current();
-            throw new ParseError(`После '${kind}' не хватает хотя бы одной переменной`, token.line, token.col);
+            throw new ParseError(`После '${kind}' не должно быть пусто: нужна хотя бы одна переменная`, token.line, token.col);
         }
 
         while (this.current().type === "id") {
@@ -357,8 +357,19 @@ class Parser {
             value = this.context.get(name)!;
         } else {
             const token = this.current();
+            const prev = this.tokens[this.pos - 1];
+            if (token.value === ";" || token.value === "End" || token.value === "Анализ" || token.value === "Синтез" || token.type === "eof") {
+                if (prev && ["+", "-", "*", "/", "и", "или"].includes(prev.value)) {
+                    throw new ParseError(
+                        `Уравнение не должно заканчиваться оператором '${prev.value}'`,
+                        prev.line,
+                        prev.col,
+                    );
+                }
+            }
+
             throw new ParseError(
-                `Не хватает целого числа, переменной или '(...)' перед '${token.value}'`,
+                `Здесь не должно быть '${token.value}': выражение должно начинаться с числа, переменной или '(...)'`,
                 token.line,
                 token.col,
             );

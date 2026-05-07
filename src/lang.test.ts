@@ -61,7 +61,7 @@ End`
 Анализ A
 End`
     const err = getParseError(src)
-    expect(err.message).toContain("После правой части не хватает ';'")
+    expect(err.message).toContain("Уравнение не должно заканчиваться без ';'")
     expect(err.line).toBe(3)
   })
 
@@ -72,7 +72,7 @@ End`
 Анализ A
 End`
     const err = getParseError(src)
-    expect(err.message).toContain("После метки '2' не хватает ':'")
+    expect(err.message).toContain("После метки '2' не должно идти имя без ':'")
   })
 
   it('fails when operator inside right part is missing', () => {
@@ -82,7 +82,7 @@ End`
 Анализ A
 End`
     const err = getParseError(src)
-    expect(err.message).toContain("Не хватает оператора перед '5'")
+    expect(err.message).toContain("пропуска оператора перед '5'")
   })
 
   it('fails on unknown variable', () => {
@@ -110,7 +110,7 @@ End`
 1: X=1;
 End`
     const err = getParseError(src)
-    expect(err.message).toContain('Не хватает хотя бы одного множества')
+    expect(err.message).toContain('нужно хотя бы одно множество')
     expect(err.line).toBe(3)
     expect(err.col).toBe(1)
   })
