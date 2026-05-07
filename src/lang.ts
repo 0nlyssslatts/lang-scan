@@ -152,14 +152,14 @@ class Parser {
         if (token.value !== value) {
             if (value === "End" && token.type === "eof") {
                 throw new ParseError(
-                    "Ожидалось 'End' в конце программы",
+                    "Не хватает 'End' в конце программы",
                     token.line,
                     token.col,
                 );
             }
 
             throw new ParseError(
-                `Ожидалось '${value}', получено '${token.value}'`,
+                `Не хватает '${value}' перед '${token.value}'`,
                 token.line,
                 token.col,
             );
@@ -174,7 +174,7 @@ class Parser {
 
         if (token.type !== type) {
             throw new ParseError(
-                `Ожидалось ${label}, получено '${token.value}'`,
+                `Не хватает ${label} перед '${token.value}'`,
                 token.line,
                 token.col,
             );
@@ -215,7 +215,7 @@ class Parser {
         if (!this.isEquationStart()) {
             const token = this.current();
             throw new ParseError(
-                "Ожидалось уравнение вида: Метка ':' Перем '=' Прав.часть",
+                "Не хватает уравнения вида: Метка ':' Перем '=' Прав.часть",
                 token.line,
                 token.col,
             );
@@ -229,7 +229,7 @@ class Parser {
             if (!this.isEquationStart()) {
                 const token = this.current();
                 throw new ParseError(
-                    "После ';' ожидалось следующее уравнение",
+                    "После ';' не хватает следующего уравнения",
                     token.line,
                     token.col,
                 );
@@ -241,7 +241,7 @@ class Parser {
         if (this.isEquationStart()) {
             const token = this.current();
             throw new ParseError(
-                "Между уравнениями ожидался символ ';'",
+                "Между уравнениями не хватает символа ';'",
                 token.line,
                 token.col,
             );
@@ -270,7 +270,7 @@ class Parser {
         if (!this.isSetStart()) {
             const token = this.current();
             throw new ParseError(
-                "Ожидалось хотя бы одно множество: 'Анализ' или 'Синтез'",
+                "Не хватает хотя бы одного множества: 'Анализ' или 'Синтез'",
                 token.line,
                 token.col,
             );
@@ -289,7 +289,7 @@ class Parser {
         if (this.current().type !== "id") {
             const token = this.current();
             throw new ParseError(
-                `После '${kind}' ожидалась хотя бы одна переменная`,
+                `После '${kind}' не хватает хотя бы одной переменной`,
                 token.line,
                 token.col,
             );
@@ -393,7 +393,7 @@ class Parser {
         } else {
             const token = this.current();
             throw new ParseError(
-                `Ожидалось целое число или переменная, получено '${token.value}'`,
+                `Не хватает целого числа или переменной перед '${token.value}'`,
                 token.line,
                 token.col,
             );

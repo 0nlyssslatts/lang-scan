@@ -121,7 +121,9 @@ function App() {
                 </button>
             </div>
             <section>
-                <pre className="result">{result || details || "—"}</pre>
+                <pre className={`result ${result ? "errorPreview" : ""}`}>
+                    {result || details || "—"}
+                </pre>
             </section>
         </main>
     );
