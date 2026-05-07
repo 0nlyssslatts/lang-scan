@@ -228,6 +228,21 @@ class Parser {
 
             if (!this.isEquationStart()) {
                 const token = this.current();
+                const n1 = this.next();
+                const n2 = this.tokens[this.pos + 2];
+
+                if (
+                    token.type === "int" &&
+                    n1?.type === "id" &&
+                    n2?.value === "="
+                ) {
+                    throw new ParseError(
+                        `После метки '${token.value}' не хватает ':'`,
+                        n1.line,
+                        n1.col,
+                    );
+                }
+
                 throw new ParseError(
                     "После ';' не хватает следующего уравнения",
                     token.line,
