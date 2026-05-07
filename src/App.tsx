@@ -21,10 +21,13 @@ const GRAMMAR_TEXT = `Язык = «Begin» Уравнения Множества
 Цифра = «0» ! «1» ! … ! «9»`;
 
 const SAMPLE_INPUT = `Begin
-1: X=sin 12+3;
-2: Y=-3*abs 5;
+1: X=sin cos abs 3;
+Y=(X+2)*4/2-1;
+3: Z=отрицание 0 и 1 или 0;
+4: W=-tg 0+X;
 Анализ A B C
 Синтез D E
+F G H
 End`;
 
 function App() {
