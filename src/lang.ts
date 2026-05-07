@@ -274,6 +274,22 @@ class Parser {
 
         const value = this.parseRightPart();
 
+        const token = this.current();
+        const isOperatorBoundary =
+            token.value === ";" ||
+            token.value === "End" ||
+            token.value === "Анализ" ||
+            token.value === "Синтез" ||
+            token.type === "eof";
+
+        if (!isOperatorBoundary) {
+            throw new ParseError(
+                `Не хватает оператора перед '${token.value}'`,
+                token.line,
+                token.col,
+            );
+        }
+
         this.context.set(name, value);
 
         this.outputs.push(
