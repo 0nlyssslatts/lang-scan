@@ -239,7 +239,10 @@ class Parser {
 
         if (!boundary) {
             if ((token.type === "int" && this.next()?.value === ":") || token.value === "Анализ" || token.value === "Синтез") {
-                throw new ParseError("Уравнение не должно заканчиваться без ';'", token.line, token.col);
+                const prev = this.tokens[this.pos - 1];
+                const errLine = prev?.line ?? token.line;
+                const errCol = prev ? prev.col + prev.value.length : token.col;
+                throw new ParseError("Уравнение не должно заканчиваться без ';'", errLine, errCol);
             }
             throw new ParseError(`Между частями выражения не должно быть пропуска оператора перед '${token.value}'`, token.line, token.col);
         }
